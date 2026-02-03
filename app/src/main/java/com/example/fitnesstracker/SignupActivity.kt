@@ -3,10 +3,13 @@ package com.example.fitnesstracker
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.core.view.WindowCompat
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fitnesstracker.databinding.ActivitySignupBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
 
 class SignupActivity : AppCompatActivity() {
 
@@ -18,6 +21,8 @@ class SignupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        WindowCompat.getInsetsController(window, window.decorView)
+            .isAppearanceLightStatusBars = false
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
@@ -59,9 +64,20 @@ class SignupActivity : AppCompatActivity() {
         }
 
         // Redirect to Login Screen
-        binding.tvLoginRedirect.setOnClickListener {
+        binding.btnSignup.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
+            Toast.makeText(this, "Successfully Signup:" ,Toast.LENGTH_SHORT).show()
             finish()
         }
+
+    }
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (currentFocus != null) {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+            currentFocus!!.clearFocus()
+        }
+        return super.dispatchTouchEvent(ev)
     }
 }
+

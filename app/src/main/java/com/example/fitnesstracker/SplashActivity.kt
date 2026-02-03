@@ -2,11 +2,12 @@ package com.example.fitnesstracker
 
 import android.content.Intent
 import android.os.Bundle
-import kotlin.jvm.java
+import android.widget.Toast
+import androidx.core.view.WindowCompat
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fitnesstracker.databinding.ActivitySplashBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.example.fitnesstracker.MainActivity
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SplashActivity : AppCompatActivity() {
 
@@ -18,20 +19,30 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        WindowCompat.getInsetsController(window, window.decorView)
+            .isAppearanceLightStatusBars = false
+
         auth = FirebaseAuth.getInstance()
 
-        // Check if user is already logged in
         val currentUser = auth.currentUser
+
         if (currentUser != null) {
-            // User is logged in → go to MainActivity
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        } else {
-            // User not logged in → go to LoginActivity after delay (e.g., 2 seconds)
+            //  User already logged in → auto move after 3 seconds
+            binding.getStartedBtn.isEnabled = false
+            binding.getStartedBtn.alpha = 0.6f // visually show it's disabled
+
             binding.root.postDelayed({
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }, 3000)
+
+        } else {
+            //  User NOT logged in → wait for user click
+            binding.getStartedBtn.setOnClickListener {
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
-            }, 2000)
+            }
         }
     }
 }
+

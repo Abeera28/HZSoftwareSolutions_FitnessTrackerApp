@@ -5,8 +5,11 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.jvm.java
+import androidx.core.view.WindowCompat
 import com.example.fitnesstracker.databinding.ActivityLoginBinding
 import com.google.firebase.auth.FirebaseAuth
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
 
 class LoginActivity : AppCompatActivity() {
 
@@ -15,6 +18,8 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.getInsetsController(window, window.decorView)
+            .isAppearanceLightStatusBars = false
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -46,5 +51,13 @@ class LoginActivity : AppCompatActivity() {
         binding.tvSignUpRedirect.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
         }
+    }
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (currentFocus != null) {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+            currentFocus!!.clearFocus()
+        }
+        return super.dispatchTouchEvent(ev)
     }
 }
