@@ -34,7 +34,7 @@ class SplashActivity : AppCompatActivity() {
             binding.root.postDelayed({
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
-            }, 3000)
+            }, 2000)
 
         } else {
             //  User NOT logged in → wait for user click
