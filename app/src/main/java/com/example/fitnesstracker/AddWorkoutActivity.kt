@@ -14,9 +14,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class AddWorkoutActivity : AppCompatActivity() {
 
-    private var workoutId: String? = null
     private lateinit var binding: ActivityAddWorkoutBinding
     private val db = FirebaseFirestore.getInstance()
+    private var workoutId: String? = null
 
     // Flags to track manual edits
     private var userEditingSteps = false
@@ -40,8 +40,9 @@ class AddWorkoutActivity : AppCompatActivity() {
 
         setupActivitySpinner()
         setupTextWatchers()
+        setupDurationWatcher()
 
-        // When activity is selected
+        // Activity spinner listener
         binding.spinnerActivity.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -51,26 +52,16 @@ class AddWorkoutActivity : AppCompatActivity() {
                     id: Long
                 ) {
                     val activity = parent?.getItemAtPosition(position).toString()
-                    val duration = binding.etDuration.text.toString().toIntOrNull() ?: 0
+                    updateWorkoutSpinner(activity)
 
+                    val duration = binding.etDuration.text.toString().toIntOrNull() ?: 0
+                    userEditingSteps = false
+                    userEditingCalories = false
                     autoCalculate(activity, duration)
-                    updateWorkoutSpinner(activity) // <-- Update workout dropdown
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
-
-        // When duration loses focus
-        binding.etDuration.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val duration = binding.etDuration.text.toString().toIntOrNull() ?: return@setOnFocusChangeListener
-                val activity = binding.spinnerActivity.selectedItem.toString()
-                // Reset manual edit flags
-                userEditingSteps = false
-                userEditingCalories = false
-                autoCalculate(activity, duration)
-            }
-        }
 
         workoutId?.let { loadWorkout(it) }
 
@@ -79,69 +70,66 @@ class AddWorkoutActivity : AppCompatActivity() {
         }
     }
 
-    //  Load existing workout
+    // -------------------- Duration TextWatcher --------------------
+    private fun setupDurationWatcher() {
+        binding.etDuration.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val duration = s.toString().toIntOrNull() ?: return
+                val activity = binding.spinnerActivity.selectedItem.toString()
+
+                userEditingSteps = false
+                userEditingCalories = false
+
+                autoCalculate(activity, duration)
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+    }
+
+    // -------------------- Load Workout (Edit Mode) --------------------
     private fun loadWorkout(id: String) {
-        db.collection("workouts")
-            .document(id)
-            .get()
+        db.collection("workouts").document(id).get()
             .addOnSuccessListener { doc ->
                 if (!doc.exists()) return@addOnSuccessListener
+
                 val workout = doc.toObject(Workout::class.java) ?: return@addOnSuccessListener
 
                 binding.etDuration.setText(workout.duration.toString())
                 binding.etSteps.setText("${workout.steps} steps")
                 binding.etCalories.setText("${workout.calories} kcal")
 
-                // Set Activity Spinner
-                val activities = listOf("Walking", "Running", "Cycling", "Gym", "Yoga")
-                binding.spinnerActivity.setSelection(
-                    activities.indexOf(workout.activityType)
-                )
+                val activities = listOf("Select Activity", "Walking", "Running", "Cycling", "Gym", "Yoga")
+                binding.spinnerActivity.setSelection(activities.indexOf(workout.activityType))
 
-                // Update Workout Spinner and select workout
                 updateWorkoutSpinner(workout.activityType)
                 val workoutList = workoutOptions[workout.activityType] ?: emptyList()
                 binding.spinnerWorkout.setSelection(workoutList.indexOf(workout.workoutName))
-
-                // Reset manual edit flags
-                userEditingSteps = false
-                userEditingCalories = false
             }
     }
 
-    // -------------------- Setup Activity Spinner --------------------
+    // -------------------- Activity Spinner --------------------
     private fun setupActivitySpinner() {
-        val activities = listOf(
-            "Select Activity",
-            "Walking",
-            "Running",
-            "Cycling",
-            "Gym",
-            "Yoga"
-        )
-        val adapter = ArrayAdapter(
-            this,
-            R.layout.spinner_item,
-            activities
-        )
+        val activities = listOf("Select Activity", "Walking", "Running", "Cycling", "Gym", "Yoga")
+
+        val adapter = ArrayAdapter(this, R.layout.spinner_item, activities)
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item)
         binding.spinnerActivity.adapter = adapter
     }
 
-    // -------------------- Update Workout Spinner --------------------
+    // -------------------- Workout Spinner --------------------
     private fun updateWorkoutSpinner(activity: String) {
         val workouts = workoutOptions[activity] ?: emptyList()
-        val adapter = ArrayAdapter(
-            this,
-            R.layout.spinner_item,
-            workouts
-        )
+        val adapter = ArrayAdapter(this, R.layout.spinner_item, workouts)
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item)
         binding.spinnerWorkout.adapter = adapter
     }
 
-    // -------------------- Text Watchers for Steps & Calories --------------------
+    // -------------------- Steps & Calories Watchers --------------------
     private fun setupTextWatchers() {
+
         binding.etSteps.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -153,9 +141,7 @@ class AddWorkoutActivity : AppCompatActivity() {
                 if (number.isNotEmpty()) {
                     binding.etSteps.setText("$number steps")
                     binding.etSteps.setSelection(number.length)
-                } else {
-                    binding.etSteps.setText("")
-                }
+                } else binding.etSteps.setText("")
                 binding.etSteps.addTextChangedListener(this)
             }
         })
@@ -171,16 +157,15 @@ class AddWorkoutActivity : AppCompatActivity() {
                 if (number.isNotEmpty()) {
                     binding.etCalories.setText("$number kcal")
                     binding.etCalories.setSelection(number.length)
-                } else {
-                    binding.etCalories.setText("")
-                }
+                } else binding.etCalories.setText("")
                 binding.etCalories.addTextChangedListener(this)
             }
         })
     }
 
-    // -------------------- Save or Update Workout --------------------
+    // -------------------- Save / Update Workout --------------------
     private fun saveOrUpdateWorkout() {
+
         val activity = binding.spinnerActivity.selectedItem.toString()
         val workoutName = binding.spinnerWorkout.selectedItem?.toString() ?: ""
         val durationStr = binding.etDuration.text.toString().trim()
@@ -198,9 +183,9 @@ class AddWorkoutActivity : AppCompatActivity() {
             return
         }
 
-        val duration = durationStr.toIntOrNull() ?: 0
-        val steps = binding.etSteps.text.toString().replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
-        val calories = binding.etCalories.text.toString().replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+        val duration = durationStr.toInt()
+        val steps = binding.etSteps.text.toString().replace("[^0-9]".toRegex(), "").toInt()
+        val calories = binding.etCalories.text.toString().replace("[^0-9]".toRegex(), "").toInt()
 
         val workoutData = hashMapOf(
             "activityType" to activity,
@@ -217,11 +202,13 @@ class AddWorkoutActivity : AppCompatActivity() {
             db.collection("workouts").document(workoutId!!).update(workoutData as Map<String, Any>)
         }
 
+        Toast.makeText(this, "Workout saved successfully 💪", Toast.LENGTH_SHORT).show()
         finish()
     }
 
-    // -------------------- Auto-calculate Steps & Calories --------------------
+    // -------------------- Auto Calculation --------------------
     private fun autoCalculate(activity: String?, durationMin: Int) {
+
         if (activity == null || activity == "Select Activity") return
 
         val stepsPerMin = when (activity) {
