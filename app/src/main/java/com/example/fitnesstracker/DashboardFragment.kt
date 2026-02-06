@@ -26,13 +26,15 @@ class DashboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
-
-        loadDashboardData()
-
         return binding.root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        loadDashboardData()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -48,7 +50,7 @@ class DashboardFragment : Fragment() {
             .addOnSuccessListener { documents ->
 
                 if (documents.isEmpty) {
-                    binding.tvEmpty.visibility = View.VISIBLE
+                    _binding?.tvEmpty?.visibility = View.VISIBLE
                     return@addOnSuccessListener
                 }
 
@@ -61,18 +63,19 @@ class DashboardFragment : Fragment() {
                     val date = doc.getLong("date") ?: 0L
 
                     totalCalories += calories
-
-                    if (date >= todayStart) {
-                        todayCalories += calories
-                    }
+                    if (date >= todayStart) todayCalories += calories
                 }
 
-                binding.tvTotalCalories.text = "$totalCalories kcal"
-                binding.tvTotalActivities.text = documents.size().toString()
-                binding.tvTodayCalories.text = "$todayCalories kcal"
+                _binding?.let {
+                    it.tvTotalCalories.text = "$totalCalories kcal"
+                    it.tvTotalActivities.text = documents.size().toString()
+                    it.tvTodayCalories.text = "$todayCalories kcal"
+                }
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed to load data", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    Toast.makeText(requireContext(), "Failed to load data", Toast.LENGTH_SHORT).show()
+                }
             }
     }
 
@@ -85,3 +88,4 @@ class DashboardFragment : Fragment() {
         return cal.timeInMillis
     }
 }
+
