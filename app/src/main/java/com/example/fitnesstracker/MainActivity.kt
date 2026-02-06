@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_dashboard -> replaceFragment(DashboardFragment())
                 R.id.nav_add -> replaceFragment(AddFragment())
-                R.id.nav_history -> replaceFragment(HistoryFragment())
+
             }
 
             popOutSelectedIcon(item.itemId)

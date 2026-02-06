@@ -11,9 +11,5 @@
         android:title="Add Activity"
         android:icon="@drawable/activity" />
 
-    <item
-        android:id="@+id/nav_history"
-        android:title="History"
-        android:icon="@drawable/history" />
 
 </menu>
