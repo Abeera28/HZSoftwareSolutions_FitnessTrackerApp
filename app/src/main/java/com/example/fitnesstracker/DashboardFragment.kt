@@ -2,90 +2,59 @@ package com.example.fitnesstracker
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.fitnesstracker.databinding.FragmentDashboardBinding
-import com.google.firebase.auth.FirebaseAuth
-import android.widget.Toast
-import java.util.Calendar
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fitnesstracker.model.Workout
 
+class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
-
-class DashboardFragment : Fragment() {
-
-    private var _binding: FragmentDashboardBinding? = null
-    private val binding get() = _binding!!
-
+    private lateinit var binding: FragmentDashboardBinding
     private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentDashboardBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding = FragmentDashboardBinding.bind(view)
+
         loadDashboardData()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     private fun loadDashboardData() {
-        val userId = auth.currentUser?.uid ?: return
-
-        db.collection("users")
-            .document(userId)
-            .collection("fitnessLogs")
+        db.collection("workouts")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
-            .addOnSuccessListener { documents ->
-
-                if (documents.isEmpty) {
-                    _binding?.tvEmpty?.visibility = View.VISIBLE
-                    return@addOnSuccessListener
-                }
+            .addOnSuccessListener { result ->
 
                 var totalCalories = 0
-                var todayCalories = 0
-                val todayStart = getTodayStartMillis()
+                var totalDuration = 0
+                val recentList = mutableListOf<Workout>()
 
-                for (doc in documents) {
-                    val calories = doc.getLong("calories")?.toInt() ?: 0
-                    val date = doc.getLong("date") ?: 0L
+                for (doc in result) {
+                    val workout = doc.toObject(Workout::class.java)
 
-                    totalCalories += calories
-                    if (date >= todayStart) todayCalories += calories
+                    totalCalories += workout.calories
+                    totalDuration += workout.duration
+
+                    if (recentList.size < 3) {
+                        recentList.add(workout)
+                    }
                 }
 
-                _binding?.let {
-                    it.tvTotalCalories.text = "$totalCalories kcal"
-                    it.tvTotalActivities.text = documents.size().toString()
-                    it.tvTodayCalories.text = "$todayCalories kcal"
-                }
-            }
-            .addOnFailureListener {
-                if (isAdded) {
-                    Toast.makeText(requireContext(), "Failed to load data", Toast.LENGTH_SHORT).show()
-                }
+                binding.tvCalories.text = totalCalories.toString()
+                binding.tvDuration.text = totalDuration.toString()
+
+                setupRecentRecycler(recentList)
             }
     }
 
-    private fun getTodayStartMillis(): Long {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        return cal.timeInMillis
+    private fun setupRecentRecycler(list: List<Workout>) {
+        binding.rvRecentActivities.layoutManager =
+            LinearLayoutManager(requireContext())
+
+        binding.rvRecentActivities.adapter =
+            RecentWorkoutAdapter(list)
     }
 }
 
