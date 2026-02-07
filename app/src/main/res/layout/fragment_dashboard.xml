@@ -100,12 +100,26 @@
                 android:textColor="#000000" />
 
             <!-- Chart Placeholder -->
-            <View
-                android:id="@+id/chartWeekly"
+            <LinearLayout
+                android:id="@+id/layoutWeeklyBars"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 android:layout_marginTop="12dp"
-                android:background="#E3F2FD" />
+                android:orientation="horizontal"
+                android:gravity="bottom"
+                android:weightSum="7">
+
+                <!-- 7 bars (Mon–Sun) -->
+                <View android:id="@+id/bar1" style="@style/WeeklyBar"/>
+                <View android:id="@+id/bar2" style="@style/WeeklyBar"/>
+                <View android:id="@+id/bar3" style="@style/WeeklyBar"/>
+                <View android:id="@+id/bar4" style="@style/WeeklyBar"/>
+                <View android:id="@+id/bar5" style="@style/WeeklyBar"/>
+                <View android:id="@+id/bar6" style="@style/WeeklyBar"/>
+                <View android:id="@+id/bar7" style="@style/WeeklyBar"/>
+
+            </LinearLayout>
+
         </LinearLayout>
 
         <!-- RECENT ACTIVITIES -->

@@ -3,6 +3,7 @@ package com.example.fitnesstracker
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.View
+import java.util.Calendar
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.fitnesstracker.databinding.FragmentDashboardBinding
@@ -19,6 +20,10 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding = FragmentDashboardBinding.bind(view)
 
         loadDashboardData()
+    }
+    override fun onResume() {
+        super.onResume()
+        loadWeeklyProgress()
     }
 
     private fun loadDashboardData() {
@@ -56,5 +61,55 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding.rvRecentActivities.adapter =
             RecentWorkoutAdapter(list)
     }
+    private fun loadWeeklyProgress() {
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, -6)
+        val startTime = calendar.timeInMillis
+
+        db.collection("workouts")
+            .whereGreaterThanOrEqualTo("timestamp", startTime)
+            .get()
+            .addOnSuccessListener { docs ->
+
+                val dailyCalories = IntArray(7)
+
+                for (doc in docs) {
+                    val ts = doc.getLong("timestamp") ?: continue
+                    val calories = doc.getLong("calories")?.toInt() ?: 0
+
+                    val dayIndex = getDayIndex(ts)
+                    dailyCalories[dayIndex] += calories
+                }
+
+                updateWeeklyBars(dailyCalories)
+            }
+    }
+    private fun getDayIndex(timestamp: Long): Int {
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = timestamp
+        return cal.get(Calendar.DAY_OF_WEEK) - 1 // 0–6
+    }
+    private fun updateWeeklyBars(values: IntArray) {
+
+        val bars = listOf(
+            binding.bar1,
+            binding.bar2,
+            binding.bar3,
+            binding.bar4,
+            binding.bar5,
+            binding.bar6,
+            binding.bar7
+        )
+
+        val max = values.maxOrNull()?.coerceAtLeast(1) ?: 1
+
+        bars.forEachIndexed { index, bar ->
+            val params = bar.layoutParams
+            params.height = (values[index] * 120 / max).coerceAtLeast(10)
+            bar.layoutParams = params
+        }
+    }
+
+
 }
 
