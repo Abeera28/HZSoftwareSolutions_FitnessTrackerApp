@@ -46,6 +46,27 @@ class MainActivity : AppCompatActivity() {
             popOutSelectedIcon(item.itemId)
             true
         }
+        binding.ivLogout.setOnClickListener {
+            // Show confirmation dialog
+            val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+            builder.setTitle("Logout")
+            builder.setMessage("Are you sure you want to logout?")
+            builder.setPositiveButton("Yes") { dialog, _ ->
+                // Logout the user
+                FirebaseAuth.getInstance().signOut()
+                // Navigate to LoginActivity
+                val intent = android.content.Intent(this, LoginActivity::class.java)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                dialog.dismiss()
+            }
+            builder.setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+            val dialog = builder.create()
+            dialog.show()
+        }
+
     }
 
     private fun popOutSelectedIcon(selectedItemId: Int) {
@@ -65,5 +86,13 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
+
+        // Show logout button only on DashboardFragment
+        if (fragment is DashboardFragment) {
+            binding.ivLogout.visibility = View.VISIBLE
+        } else {
+            binding.ivLogout.visibility = View.GONE
+        }
     }
+
 }
