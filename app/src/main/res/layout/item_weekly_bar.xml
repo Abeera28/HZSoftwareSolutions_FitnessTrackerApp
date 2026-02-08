@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="0dp"
-    android:layout_height="match_parent"
-    android:layout_weight="1"
-    android:orientation="vertical"
-    android:gravity="bottom|center_horizontal">
+android:layout_width="0dp"
+android:layout_height="wrap_content"
+android:layout_weight="1"
+android:gravity="center"
+android:orientation="vertical">
 
-    <!-- Percentage -->
+<!-- Percentage -->
     <TextView
         android:id="@+id/tvPercent"
         android:layout_width="wrap_content"
@@ -18,8 +18,8 @@
     <!-- Bar -->
     <View
         android:id="@+id/bar"
-        android:layout_width="12dp"
-        android:layout_height="10dp"
+        android:layout_width="18dp"
+        android:layout_height="40dp"
         android:layout_marginVertical="4dp"
         android:background="#FFD600" />
 

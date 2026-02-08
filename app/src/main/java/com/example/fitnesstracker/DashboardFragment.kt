@@ -107,12 +107,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         val days = mutableListOf<String>()
         val cal = Calendar.getInstance()
+        cal.add(Calendar.DAY_OF_YEAR, -6) // start from 6 days ago
 
-        cal.add(Calendar.DAY_OF_YEAR, -6)
+        val formatter = java.text.SimpleDateFormat("EEE")
 
         for (i in 0..6) {
-            val day = java.text.SimpleDateFormat("EEE").format(cal.time)
-            days.add(day)
+            days.add(formatter.format(cal.time))
             cal.add(Calendar.DAY_OF_YEAR, 1)
         }
 
@@ -131,16 +131,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             val tvDay = barView.findViewById<TextView>(R.id.tvDay)
 
             val percent = (values[i] * 100) / max
+            tvPercent.setTextColor(android.graphics.Color.WHITE)
 
             tvPercent.text = "$percent%"
             tvDay.text = days[i]
+            tvDay.setTextColor(android.graphics.Color.WHITE)
 
             bar.layoutParams.height = (percent * 140 / 100).coerceAtLeast(10)
 
             binding.layoutWeeklyBars.addView(barView)
         }
     }
-
-
-
 }
