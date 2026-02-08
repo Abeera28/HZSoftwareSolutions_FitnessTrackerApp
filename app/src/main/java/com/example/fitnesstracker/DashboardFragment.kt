@@ -1,21 +1,23 @@
 package com.example.fitnesstracker
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.TextView
-import java.util.Calendar
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.FirebaseFirestore
-import com.example.fitnesstracker.databinding.FragmentDashboardBinding
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fitnesstracker.databinding.FragmentDashboardBinding
 import com.example.fitnesstracker.model.Workout
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import java.util.*
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
-    private lateinit var recentAdapter: RecentWorkoutAdapter
     private lateinit var binding: FragmentDashboardBinding
+    private lateinit var recentAdapter: RecentWorkoutAdapter
     private val db = FirebaseFirestore.getInstance()
+    private var listener: ListenerRegistration? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -24,102 +26,84 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding.dashboardContent.visibility = View.INVISIBLE
         binding.progressDashboard.visibility = View.VISIBLE
 
-        setupRecyclerOnce()
+        setupRecycler()
         loadDashboardData()
     }
 
-    private fun setupRecyclerOnce() {
+    private fun setupRecycler() {
         recentAdapter = RecentWorkoutAdapter(mutableListOf())
-        binding.rvRecentActivities.layoutManager =
-            LinearLayoutManager(requireContext())
+        binding.rvRecentActivities.layoutManager = LinearLayoutManager(requireContext())
         binding.rvRecentActivities.adapter = recentAdapter
     }
 
     private fun loadDashboardData() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        db.collection("workouts")
+        listener = db.collection("workouts")
             .whereEqualTo("userId", userId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { result, error ->
-
-                if (error != null) return@addSnapshotListener
-                if (result == null) return@addSnapshotListener
+                if (!isAdded || view == null) return@addSnapshotListener
+                if (error != null || result == null) return@addSnapshotListener
 
                 var totalCalories = 0
                 var totalDuration = 0
                 val recentList = mutableListOf<Workout>()
-                val dailyCalories = IntArray(7)
 
-                val now = Calendar.getInstance()
-                val weekStart = Calendar.getInstance()
-                weekStart.add(Calendar.DAY_OF_YEAR, -6)
+                // Prepare last 7 days map (ordered)
+                val dailyCaloriesMap = linkedMapOf<String, Int>()
+                val cal = Calendar.getInstance()
+                cal.timeZone = TimeZone.getDefault()
+                val formatter = java.text.SimpleDateFormat("EEE", Locale.getDefault())
+                formatter.timeZone = TimeZone.getDefault()
+
+                for (i in 6 downTo 0) {
+                    val tempCal = cal.clone() as Calendar
+                    tempCal.add(Calendar.DAY_OF_YEAR, -i)
+                    val dayLabel = formatter.format(tempCal.time)
+                    dailyCaloriesMap[dayLabel] = 0
+                }
+
+                val weekStartMillis = (cal.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, -6) }.timeInMillis
 
                 for (doc in result.documents) {
-
                     val workout = doc.toObject(Workout::class.java) ?: continue
                     workout.id = doc.id
 
                     totalCalories += workout.calories
                     totalDuration += workout.duration
 
-                    if (recentList.size < 3) {
-                        recentList.add(workout)
-                    }
+                    if (recentList.size < 3) recentList.add(workout)
 
                     val ts = workout.timestamp
-                    if (ts >= weekStart.timeInMillis) {
-                        val dayIndex = getDayIndex(ts)
-                        dailyCalories[dayIndex] += workout.calories
+                    if (ts >= weekStartMillis) {
+                        val workoutCal = Calendar.getInstance().apply { timeInMillis = ts }
+                        val dayLabel = formatter.format(workoutCal.time)
+                        dailyCaloriesMap[dayLabel] = (dailyCaloriesMap[dayLabel] ?: 0) + workout.calories
                     }
                 }
 
+                // Update UI safely
                 binding.tvCalories.text = totalCalories.toString()
                 binding.tvDuration.text = totalDuration.toString()
-
                 recentAdapter.updateList(recentList)
-                showWeeklyBars(dailyCalories)
+                showWeeklyBars(dailyCaloriesMap)
 
                 binding.progressDashboard.visibility = View.GONE
                 binding.dashboardContent.visibility = View.VISIBLE
             }
     }
 
+    private fun showWeeklyBars(dailyCaloriesMap: LinkedHashMap<String, Int>) {
+        if (!isAdded || view == null) return  // safety check
 
-
-    private fun getDayIndex(timestamp: Long): Int {
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = timestamp
-
-        val today = Calendar.getInstance()
-
-        val diff = ((today.timeInMillis - cal.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
-
-        return when {
-            diff in 0..6 -> 6 - diff // last 7 days mapping
-            else -> -1
-        }
-    }
-
-
-    private fun showWeeklyBars(values: IntArray) {
-
-        val days = mutableListOf<String>()
-        val cal = Calendar.getInstance()
-        cal.add(Calendar.DAY_OF_YEAR, -6) // start from 6 days ago
-
-        val formatter = java.text.SimpleDateFormat("EEE")
-
-        for (i in 0..6) {
-            days.add(formatter.format(cal.time))
-            cal.add(Calendar.DAY_OF_YEAR, 1)
-        }
+        val values = dailyCaloriesMap.values.toIntArray()
+        val days = dailyCaloriesMap.keys.toList()
 
         val max = values.maxOrNull()?.coerceAtLeast(1) ?: 1
         binding.layoutWeeklyBars.removeAllViews()
 
-        for (i in 0..6) {
+        for (i in values.indices) {
             val barView = layoutInflater.inflate(
                 R.layout.item_weekly_bar,
                 binding.layoutWeeklyBars,
@@ -132,14 +116,17 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
             val percent = (values[i] * 100) / max
             tvPercent.setTextColor(android.graphics.Color.WHITE)
-
             tvPercent.text = "$percent%"
             tvDay.text = days[i]
             tvDay.setTextColor(android.graphics.Color.WHITE)
 
             bar.layoutParams.height = (percent * 140 / 100).coerceAtLeast(10)
-
             binding.layoutWeeklyBars.addView(barView)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        listener?.remove()  // remove Firestore listener to avoid crashes
     }
 }
