@@ -12,6 +12,7 @@ import com.example.fitnesstracker.model.Workout
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
+    private lateinit var recentAdapter: RecentWorkoutAdapter
     private lateinit var binding: FragmentDashboardBinding
     private val db = FirebaseFirestore.getInstance()
 
@@ -19,11 +20,18 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentDashboardBinding.bind(view)
 
+        binding.dashboardContent.visibility = View.INVISIBLE
+        binding.progressDashboard.visibility = View.VISIBLE
+
+        setupRecyclerOnce()
         loadDashboardData()
     }
-    override fun onResume() {
-        super.onResume()
-        loadWeeklyProgress()
+
+    private fun setupRecyclerOnce() {
+        recentAdapter = RecentWorkoutAdapter(mutableListOf())
+        binding.rvRecentActivities.layoutManager =
+            LinearLayoutManager(requireContext())
+        binding.rvRecentActivities.adapter = recentAdapter
     }
 
     private fun loadDashboardData() {
@@ -50,17 +58,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 binding.tvCalories.text = totalCalories.toString()
                 binding.tvDuration.text = totalDuration.toString()
 
-                setupRecentRecycler(recentList)
+                recentAdapter.updateList(recentList)
+                loadWeeklyProgress()
+
+                binding.progressDashboard.visibility = View.GONE
+                binding.dashboardContent.visibility = View.VISIBLE
+
             }
     }
 
-    private fun setupRecentRecycler(list: List<Workout>) {
-        binding.rvRecentActivities.layoutManager =
-            LinearLayoutManager(requireContext())
-
-        binding.rvRecentActivities.adapter =
-            RecentWorkoutAdapter(list)
-    }
     private fun loadWeeklyProgress() {
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.DAY_OF_YEAR, -6)

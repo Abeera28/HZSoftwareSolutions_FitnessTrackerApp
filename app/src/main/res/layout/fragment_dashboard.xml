@@ -3,148 +3,164 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#121212"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:fillViewport="true">
 
+    <!-- SINGLE CHILD -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- TOP SUMMARY CARDS -->
+        <!-- LOADING -->
+        <ProgressBar
+            android:id="@+id/progressDashboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible"
+            android:layout_marginTop="40dp"/>
+
+        <!-- DASHBOARD CONTENT -->
         <LinearLayout
+            android:id="@+id/dashboardContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
+            android:visibility="invisible"
+            android:orientation="vertical">
 
-            <!-- Calories Card -->
+            <!-- TOP SUMMARY CARDS -->
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_card"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔥"
-                    android:textSize="24sp" />
-
-                <TextView
-                    android:id="@+id/tvCalories"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Calories"
-                    android:textColor="#666666" />
-            </LinearLayout>
-
-            <!-- Duration Card -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_card"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⏱️"
-                    android:textSize="24sp" />
-
-                <TextView
-                    android:id="@+id/tvDuration"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Duration (Mint)"
-                    android:textColor="#666666" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- WEEKLY PROGRESS -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_card"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Weekly Progress"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="#000000" />
-
-            <!-- Chart Placeholder -->
-            <LinearLayout
-                android:id="@+id/layoutWeeklyBars"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginTop="12dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="bottom"
-                android:weightSum="7">
+                android:weightSum="2">
 
-                <!-- 7 bars (Mon–Sun) -->
-                <View android:id="@+id/bar1" style="@style/WeeklyBar"/>
-                <View android:id="@+id/bar2" style="@style/WeeklyBar"/>
-                <View android:id="@+id/bar3" style="@style/WeeklyBar"/>
-                <View android:id="@+id/bar4" style="@style/WeeklyBar"/>
-                <View android:id="@+id/bar5" style="@style/WeeklyBar"/>
-                <View android:id="@+id/bar6" style="@style/WeeklyBar"/>
-                <View android:id="@+id/bar7" style="@style/WeeklyBar"/>
+                <!-- Calories -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_card"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔥"
+                        android:textSize="24sp"/>
+
+                    <TextView
+                        android:id="@+id/tvCalories"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Calories"
+                        android:textColor="#666666"/>
+                </LinearLayout>
+
+                <!-- Duration -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_card"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⏱️"
+                        android:textSize="24sp"/>
+
+                    <TextView
+                        android:id="@+id/tvDuration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Duration (Min)"
+                        android:textColor="#666666"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- WEEKLY PROGRESS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Weekly Progress"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="#000000"/>
+
+                <LinearLayout
+                    android:id="@+id/layoutWeeklyBars"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="bottom"
+                    android:weightSum="7">
+
+                    <View android:id="@+id/bar1" style="@style/WeeklyBar"/>
+                    <View android:id="@+id/bar2" style="@style/WeeklyBar"/>
+                    <View android:id="@+id/bar3" style="@style/WeeklyBar"/>
+                    <View android:id="@+id/bar4" style="@style/WeeklyBar"/>
+                    <View android:id="@+id/bar5" style="@style/WeeklyBar"/>
+                    <View android:id="@+id/bar6" style="@style/WeeklyBar"/>
+                    <View android:id="@+id/bar7" style="@style/WeeklyBar"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- RECENT ACTIVITIES -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Recent Activities"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="#000000"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecentActivities"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"/>
             </LinearLayout>
 
         </LinearLayout>
-
-        <!-- RECENT ACTIVITIES -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_card"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Recent Activities"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="#000000" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRecentActivities"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" />
-        </LinearLayout>
-
     </LinearLayout>
 </ScrollView>
