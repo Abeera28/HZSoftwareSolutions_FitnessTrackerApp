@@ -2,32 +2,33 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="0dp"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:layout_weight="1"
+    android:orientation="vertical"
     android:gravity="bottom|center_horizontal">
 
+    <!-- Percentage -->
     <TextView
         android:id="@+id/tvPercent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0%"
         android:textSize="12sp"
-        android:textColor="#000000"/>
+        android:textColor="#000000" />
 
+    <!-- Bar -->
     <View
         android:id="@+id/bar"
         android:layout_width="12dp"
         android:layout_height="10dp"
-        android:background="#FFD600"
-        android:layout_marginTop="4dp"/>
+        android:layout_marginVertical="4dp"
+        android:background="#FFD600" />
 
+    <!-- Day Label -->
     <TextView
         android:id="@+id/tvDay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Mon"
         android:textSize="12sp"
-        android:textColor="#000000"
-        android:layout_marginTop="4dp"/>
+        android:textColor="#666666" />
 </LinearLayout>
-

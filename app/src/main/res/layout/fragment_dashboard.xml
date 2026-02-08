@@ -118,16 +118,13 @@
                     android:textSize="18sp"
                     android:textColor="#000000"/>
 
-                <LinearLayout
-                    android:id="@+id/layoutWeeklyBars"
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/barChartWeekly"
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:orientation="horizontal"
-                    android:gravity="bottom"
-                    android:weightSum="7"
-                    android:layout_marginTop="12dp">
-                    <!-- Dynamic bars will be added here -->
-                </LinearLayout>
+                    android:layout_height="220dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_card"/>
+
             </LinearLayout>
 
             <!-- RECENT ACTIVITIES -->

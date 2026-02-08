@@ -102,12 +102,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         val max = values.maxOrNull()?.coerceAtLeast(1) ?: 1
 
-        binding.layoutWeeklyBars.removeAllViews()
+        binding.barChartWeekly.removeAllViews()
 
         for (i in 0..6) {
             val barView = layoutInflater.inflate(
                 R.layout.item_weekly_bar,
-                binding.layoutWeeklyBars,
+                binding.barChartWeekly,
                 false
             )
 
@@ -123,10 +123,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             bar.layoutParams.height =
                 (percent * 120 / 100).coerceAtLeast(8)
 
-            binding.layoutWeeklyBars.addView(barView)
+            binding.barChartWeekly.addView(barView)
         }
     }
 
 
 }
-
