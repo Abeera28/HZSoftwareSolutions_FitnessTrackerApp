@@ -36,9 +36,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun loadDashboardData() {
+        val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+
         db.collection("workouts")
+            .whereEqualTo("userId", userId) // <-- Filter by logged-in user
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
+
             .addOnSuccessListener { result ->
 
                 var totalCalories = 0
@@ -73,9 +77,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         calendar.add(Calendar.DAY_OF_YEAR, -6)
         val startTime = calendar.timeInMillis
 
+        val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+
         db.collection("workouts")
-            .whereGreaterThanOrEqualTo("timestamp", startTime)
+            .whereEqualTo("userId", userId) // <-- Filter by logged-in user
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
+
             .addOnSuccessListener { docs ->
 
                 val dailyCalories = IntArray(7)

@@ -187,7 +187,10 @@ class AddWorkoutActivity : AppCompatActivity() {
         val steps = binding.etSteps.text.toString().replace("[^0-9]".toRegex(), "").toInt()
         val calories = binding.etCalories.text.toString().replace("[^0-9]".toRegex(), "").toInt()
 
+        val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+
         val workoutData = hashMapOf(
+            "userId" to userId, // <-- ADD THIS
             "activityType" to activity,
             "workoutName" to workoutName,
             "duration" to duration,
@@ -197,13 +200,28 @@ class AddWorkoutActivity : AppCompatActivity() {
         )
 
         if (workoutId == null) {
-            db.collection("workouts").add(workoutData)
+            db.collection("workouts")
+                .add(workoutData)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Workout saved successfully 💪", Toast.LENGTH_SHORT).show()
+                    finish() // Go back to fragment
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to save workout ❌", Toast.LENGTH_SHORT).show()
+                }
         } else {
-            db.collection("workouts").document(workoutId!!).update(workoutData as Map<String, Any>)
+            db.collection("workouts")
+                .document(workoutId!!)
+                .update(workoutData as Map<String, Any>)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Workout updated successfully 💪", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to update workout ❌", Toast.LENGTH_SHORT).show()
+                }
         }
 
-        Toast.makeText(this, "Workout saved successfully 💪", Toast.LENGTH_SHORT).show()
-        finish()
     }
 
     // -------------------- Auto Calculation --------------------

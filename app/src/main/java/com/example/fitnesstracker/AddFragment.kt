@@ -80,7 +80,6 @@ class AddFragment : Fragment() {
                 }
                 adapter.notifyDataSetChanged()
 
-                // Show "No workouts" message if list is empty
                 if (workoutList.isEmpty()) {
                     binding.tvNoWorkout.visibility = View.VISIBLE
                     binding.recyclerWorkouts.visibility = View.GONE
