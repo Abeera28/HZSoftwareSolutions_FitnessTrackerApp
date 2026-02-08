@@ -36,21 +36,30 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun loadDashboardData() {
+
         val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         db.collection("workouts")
-            .whereEqualTo("userId", userId) // <-- Filter by logged-in user
+            .whereEqualTo("userId", userId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
-            .get()
+            .addSnapshotListener { result, error ->
 
-            .addOnSuccessListener { result ->
+                if (error != null) return@addSnapshotListener
+                if (result == null) return@addSnapshotListener
 
                 var totalCalories = 0
                 var totalDuration = 0
                 val recentList = mutableListOf<Workout>()
+                val dailyCalories = IntArray(7)
 
-                for (doc in result) {
-                    val workout = doc.toObject(Workout::class.java)
+                val now = Calendar.getInstance()
+                val weekStart = Calendar.getInstance()
+                weekStart.add(Calendar.DAY_OF_YEAR, -6)
+
+                for (doc in result.documents) {
+
+                    val workout = doc.toObject(Workout::class.java) ?: continue
+                    workout.id = doc.id
 
                     totalCalories += workout.calories
                     totalDuration += workout.duration
@@ -58,58 +67,56 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     if (recentList.size < 3) {
                         recentList.add(workout)
                     }
+
+                    val ts = workout.timestamp
+                    if (ts >= weekStart.timeInMillis) {
+                        val dayIndex = getDayIndex(ts)
+                        dailyCalories[dayIndex] += workout.calories
+                    }
                 }
 
                 binding.tvCalories.text = totalCalories.toString()
                 binding.tvDuration.text = totalDuration.toString()
 
                 recentAdapter.updateList(recentList)
-                loadWeeklyProgress()
+                showWeeklyBars(dailyCalories)
 
                 binding.progressDashboard.visibility = View.GONE
                 binding.dashboardContent.visibility = View.VISIBLE
-
             }
     }
 
-    private fun loadWeeklyProgress() {
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, -6)
-        val startTime = calendar.timeInMillis
 
-        val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        db.collection("workouts")
-            .whereEqualTo("userId", userId) // <-- Filter by logged-in user
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .get()
-
-            .addOnSuccessListener { docs ->
-
-                val dailyCalories = IntArray(7)
-
-                for (doc in docs) {
-                    val ts = doc.getLong("timestamp") ?: continue
-                    val calories = doc.getLong("calories")?.toInt() ?: 0
-
-                    val dayIndex = getDayIndex(ts)
-                    dailyCalories[dayIndex] += calories
-                }
-
-                showWeeklyBars(dailyCalories)
-            }
-    }
     private fun getDayIndex(timestamp: Long): Int {
         val cal = Calendar.getInstance()
         cal.timeInMillis = timestamp
-        return cal.get(Calendar.DAY_OF_WEEK) - 1 // 0–6
+
+        val today = Calendar.getInstance()
+
+        val diff = ((today.timeInMillis - cal.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
+
+        return when {
+            diff in 0..6 -> 6 - diff // last 7 days mapping
+            else -> -1
+        }
     }
+
 
     private fun showWeeklyBars(values: IntArray) {
 
-        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-        val max = values.maxOrNull()?.coerceAtLeast(1) ?: 1
+        val days = mutableListOf<String>()
+        val cal = Calendar.getInstance()
 
+        cal.add(Calendar.DAY_OF_YEAR, -6)
+
+        for (i in 0..6) {
+            val day = java.text.SimpleDateFormat("EEE").format(cal.time)
+            days.add(day)
+            cal.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        val max = values.maxOrNull()?.coerceAtLeast(1) ?: 1
         binding.layoutWeeklyBars.removeAllViews()
 
         for (i in 0..6) {
@@ -128,12 +135,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             tvPercent.text = "$percent%"
             tvDay.text = days[i]
 
-            bar.layoutParams.height =
-                (percent * 120 / 100).coerceAtLeast(8)
+            bar.layoutParams.height = (percent * 140 / 100).coerceAtLeast(10)
 
             binding.layoutWeeklyBars.addView(barView)
         }
     }
+
 
 
 }
