@@ -104,7 +104,7 @@
             <!-- WEEKLY PROGRESS -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="231dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/bg_card"
                 android:orientation="vertical"
@@ -114,18 +114,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Weekly Progress"
-                    android:textStyle="bold"
+                    android:textColor="#000000"
                     android:textSize="18sp"
-                    android:textColor="#000000"/>
+                    android:textStyle="bold" />
 
                 <LinearLayout
                     android:id="@+id/layoutWeeklyBars"
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:orientation="horizontal"
+                    android:layout_width="355dp"
+                    android:layout_height="162dp"
+                    android:layout_marginTop="12dp"
                     android:gravity="bottom"
-                    android:weightSum="7"
-                    android:layout_marginTop="12dp">
+                    android:orientation="horizontal"
+                    android:weightSum="7">
                     <!-- Dynamic bars will be added here -->
                 </LinearLayout>
             </LinearLayout>

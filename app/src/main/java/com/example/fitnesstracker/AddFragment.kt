@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import com.google.firebase.auth.FirebaseAuth
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -64,7 +65,10 @@ class AddFragment : Fragment() {
     }
 
     private fun loadWorkouts() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
         db.collection("workouts")
+            .whereEqualTo("userId", userId) // Show only current user's workouts
             .orderBy("timestamp")
             .get()
             .addOnSuccessListener { snapshot ->
@@ -75,7 +79,22 @@ class AddFragment : Fragment() {
                     workout?.let { workoutList.add(it) }
                 }
                 adapter.notifyDataSetChanged()
+
+                // Show "No workouts" message if list is empty
+                if (workoutList.isEmpty()) {
+                    binding.tvNoWorkout.visibility = View.VISIBLE
+                    binding.recyclerWorkouts.visibility = View.GONE
+                } else {
+                    binding.tvNoWorkout.visibility = View.GONE
+                    binding.recyclerWorkouts.visibility = View.VISIBLE
+                }
+            }
+            .addOnFailureListener {
+                // Optional: handle error
+                binding.tvNoWorkout.visibility = View.VISIBLE
+                binding.recyclerWorkouts.visibility = View.GONE
             }
     }
+
 
 }

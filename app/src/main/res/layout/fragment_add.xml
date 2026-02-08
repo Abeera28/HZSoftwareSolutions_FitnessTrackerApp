@@ -16,6 +16,18 @@
         android:backgroundTint="@color/yellow"
         android:textStyle="bold"/>
 
+    <TextView
+        android:id="@+id/tvNoWorkout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No workouts yet. Add a workout!"
+        android:textColor="@color/yellow"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerWorkouts"
         android:layout_width="match_parent"
