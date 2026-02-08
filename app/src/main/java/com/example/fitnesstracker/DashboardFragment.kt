@@ -3,6 +3,7 @@ package com.example.fitnesstracker
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.View
+import android.widget.TextView
 import java.util.Calendar
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.FirebaseFirestore
@@ -87,7 +88,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     dailyCalories[dayIndex] += calories
                 }
 
-                updateWeeklyBars(dailyCalories)
+                showWeeklyBars(dailyCalories)
             }
     }
     private fun getDayIndex(timestamp: Long): Int {
@@ -95,24 +96,34 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         cal.timeInMillis = timestamp
         return cal.get(Calendar.DAY_OF_WEEK) - 1 // 0–6
     }
-    private fun updateWeeklyBars(values: IntArray) {
 
-        val bars = listOf(
-            binding.bar1,
-            binding.bar2,
-            binding.bar3,
-            binding.bar4,
-            binding.bar5,
-            binding.bar6,
-            binding.bar7
-        )
+    private fun showWeeklyBars(values: IntArray) {
 
+        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         val max = values.maxOrNull()?.coerceAtLeast(1) ?: 1
 
-        bars.forEachIndexed { index, bar ->
-            val params = bar.layoutParams
-            params.height = (values[index] * 120 / max).coerceAtLeast(10)
-            bar.layoutParams = params
+        binding.layoutWeeklyBars.removeAllViews()
+
+        for (i in 0..6) {
+            val barView = layoutInflater.inflate(
+                R.layout.item_weekly_bar,
+                binding.layoutWeeklyBars,
+                false
+            )
+
+            val tvPercent = barView.findViewById<TextView>(R.id.tvPercent)
+            val bar = barView.findViewById<View>(R.id.bar)
+            val tvDay = barView.findViewById<TextView>(R.id.tvDay)
+
+            val percent = (values[i] * 100) / max
+
+            tvPercent.text = "$percent%"
+            tvDay.text = days[i]
+
+            bar.layoutParams.height =
+                (percent * 120 / 100).coerceAtLeast(8)
+
+            binding.layoutWeeklyBars.addView(barView)
         }
     }
 

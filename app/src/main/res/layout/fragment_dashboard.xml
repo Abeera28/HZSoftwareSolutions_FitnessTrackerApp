@@ -122,18 +122,11 @@
                     android:id="@+id/layoutWeeklyBars"
                     android:layout_width="match_parent"
                     android:layout_height="150dp"
-                    android:layout_marginTop="12dp"
                     android:orientation="horizontal"
                     android:gravity="bottom"
-                    android:weightSum="7">
-
-                    <View android:id="@+id/bar1" style="@style/WeeklyBar"/>
-                    <View android:id="@+id/bar2" style="@style/WeeklyBar"/>
-                    <View android:id="@+id/bar3" style="@style/WeeklyBar"/>
-                    <View android:id="@+id/bar4" style="@style/WeeklyBar"/>
-                    <View android:id="@+id/bar5" style="@style/WeeklyBar"/>
-                    <View android:id="@+id/bar6" style="@style/WeeklyBar"/>
-                    <View android:id="@+id/bar7" style="@style/WeeklyBar"/>
+                    android:weightSum="7"
+                    android:layout_marginTop="12dp">
+                    <!-- Dynamic bars will be added here -->
                 </LinearLayout>
             </LinearLayout>
 
